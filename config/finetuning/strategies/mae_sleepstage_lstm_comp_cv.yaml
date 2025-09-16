@@ -1,0 +1,62 @@
+model_type: mae
+cv_folds_path: /oak/stanford/groups/mignot/projects/actigraphy_fm/data/splits/tbi/folds
+n_folds: 5
+
+# Classifier parameters (for finetuning)
+finetune_mode: token_wise
+finetune_train: head_only
+num_lstm_layers: 2
+lstm_dim: 8
+num_classes: 4
+head_dropout: 0.4
+head: linear
+
+# Encoder parameters, These should match the pretrained model config
+in_channels: 3 # Number of input channels
+patch_size: 900  # Number of samples per token
+embed_dim: 256  # Embedding dimension size
+seq_len: 256  # Sequence length
+num_heads: 8  # Number of attention heads in transformer
+mlp_ratio: 2  # Ratio of hidden units in the MLP to the embedding dimension
+n_encoder_layers: 12  # Number of layers in the encoder
+encoder_dropout: 0.0  # Dropout rate for the encoder
+
+# Dataset parameters
+# patch_size_samples = patch_size
+# context_window_patches = seq_len
+step_patches: 25 # ~ 90% overlap between adjacent windows/ 6-minute steps
+labels: light_deep_rem
+label_map:
+    deep: 0
+    light: 1
+    rem: 2
+    wake: 3
+    missing: -9
+label_priority: false
+patches_per_label: 1
+ignore_index: -9
+class_weights: null
+downsample_negative: null
+
+# Dataloader parameters
+batch_size: 512
+num_workers: 8
+prefetch_factor: 2
+pin_memory: true
+
+# Optimizer parameters
+lr: 0.001
+blr: null
+weight_decay: 0.01
+
+# Training parameters
+train_prcnt: 1.0
+adjust_max_epochs: false
+use_sdpa: true
+max_epochs: 75
+grad_norm_max: 1.0
+grad_accumulation_steps: 1
+mixed_precision: true
+patience: 1000
+seed: 42
+log_interval: 10

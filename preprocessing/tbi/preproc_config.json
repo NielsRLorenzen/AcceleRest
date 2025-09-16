@@ -1,0 +1,23 @@
+
+{ 
+    "psg_montage": [
+    "ECG II",
+    "Effort ABD",
+    "Effort THO",
+    "Flow Patient",
+    "SpO2"
+    ],
+    "psg_rename_map": {
+        "Effort ABD": "ABDOMEN",
+        "Effort THO": "THORAX",
+        "Flow Patient": "FLOW",
+        "ECG II": "ECG"
+    },
+    "calib_cube": -1,
+    "actigraphy_resample_freq": 30.0,
+    "psg_resample_freq": 100.0,
+    "psg_filter_order": 4,
+    "min_recording_hours": 4,
+    "standardize_psg": true,
+    "hdf5_chunksize_sec": 600
+}

@@ -1,0 +1,68 @@
+# Description: Default configuration file for FEWA model pretraining
+# Model parameters
+in_channels: 3  # Number of input channels
+patch_size: 900  # Number of samples per token
+embed_dim: 256  # Embedding dimension size
+seq_len: 256  # Number of input tokens
+num_heads: 8  # Number of attention heads in transformer
+mlp_ratio: 2 # Ratio of hidden units in the MLP to the embedding dimension
+n_encoder_layers: 12  # Number of layers in the encoder
+dropout: 0.0  # Dropout rate for the model
+num_tasks: 1 # Number of reconstructions for the model to output
+
+# Dataloader parameters
+night_dataset: false
+train_prcnt: 1.0  # Percentage of training data to use: 0.0-1.0
+windows_per_file: 24  # Number of windows per file
+window_size_seconds: 7680  # Size of the window in seconds
+min_hours_per_file: 24.0  # Minimum number of hours of contiguous data per file
+fit_overlap: true # Whether to fit the overlap to the window size
+overlap: 0.0  # Overlap between windows in seconds 
+files_per_batch: 6  # Files loaded per batch per gpu
+num_workers: 5  # Number of workers for dataloader
+prefetch_factor: 2  # Number of samples to prefetch in dataloader
+pin_memory: true  # Whether to pin memory in dataloader
+
+# Optimizer parameters
+lr: 0.001  # Learning rate
+blr: null # Base learning rate, lr = blr * eff_batch_size/256
+weight_decay: 0.01  # Weight decay
+
+# Scheduler parameters
+warmup_epochs: 1  # Number of epochs for linear warmup
+cosine_annealing: false  # Whether to use a cosine annealing scheduler
+min_lr: 1.0e-05  # Minimum learning rate for cosine annealing scheduler
+
+# Loss function parameters
+loss_norm: 'L2'
+std_cutoff: 0.015 
+std_cutoff_type: 'hard'
+invert_cutoff: false
+weight_clamp: 0.0
+weigh_target_only: true
+log_transform: false # Needed if patchwise_fft_kwargs: norm is false
+patchwise_fft_kwargs:
+  overlap: 0
+  norm: true # Needed if log_transform is false
+  window: false
+# Band amplifier parameters
+sample_freq: 30 # This allows the downsampling and weight schemes to be supplied in Hz
+# Note: Weights are relative to output frequency bins, so weights
+# on orignal bins are effectivel weight/downsample_factor 
+weighted_downsampling_scheme: # [weight, downsample_factor, [band_start, band_stop]]
+  - [1, 1, [0, 0]] # DC band
+  - [1000, 1, [0.13, 0.6]] # Breathing band
+  - [10000, 1, [0.6, 1.7]] # Pulse band
+# One of 'none', 'keep', 'merge', 'discard', or 'extend'
+# leftover_handling: none # Throw error if number of bins in band not divisible by downsample factor
+
+# Misc. training parameters
+use_sdpa: true  # Whether to use the SDPA attention mechanism
+mask_ratio: 0.6  # Ratio of tokens to be masked during training
+max_epochs: 40  # Maximum number of epochs to train for
+grad_norm_max: 1.0  # Maximum gradient norm for gradient clipping
+grad_accumulation_steps: 1  # Number of gradient accumulation steps
+mixed_precision: false  # Whether to use mixed precision training
+patience: 5  # Patience for early stopping
+seed: 42  # Seed for random number generators
+log_interval: 10 # Number of batches between logging

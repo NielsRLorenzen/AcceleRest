@@ -1,0 +1,37 @@
+# cv_folds_path: /oak/stanford/groups/mignot/projects/actigraphy_fm/data/splits/tbi/folds/
+# n_folds: 5
+# model_base_dir: /oak/stanford/groups/mignot/projects/actigraphy_fm/runs/wassed/finetune_cv/mae_bwm_lstm_comp_3591380/
+# results_path: /oak/stanford/groups/mignot/projects/actigraphy_fm/results/bwm_mae_lstmc/tbi_validation/sleep/
+
+n_folds: null
+val_set_json: /oak/stanford/groups/mignot/projects/actigraphy_fm/data/splits/internal/test_files.json
+
+model_base_dir: /oak/stanford/groups/mignot/projects/actigraphy_fm/runs/wassed/finetune_cv/mae_bwm_lstmc_internal_3869044
+results_path: /oak/stanford/groups/mignot/projects/actigraphy_fm/results/bwm_mae_lstmc_internal/
+
+ft_epoch: 75
+sequence_weights: null
+
+# Labels
+labels_name: light_deep_rem
+label_map: {
+    'deep': 0,
+    'light': 1,
+    'rem': 2,
+    'wake': 3,
+    'missing': -9,
+}
+n_classes: 4
+# label_order = ['wake', 'light', 'deep', 'rem'][::-1]
+
+# Model params
+patch_size: 900
+in_channels: 3
+embed_dim: 256
+num_heads: 8
+mlp_ratio: 2
+num_layers: 12
+max_seq_len: 256
+num_lstm_layers: 2
+lstm_dim: 4 # 0 
+head: linear

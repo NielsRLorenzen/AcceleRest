@@ -1,0 +1,52 @@
+model_type: acceleronet
+
+# AccelroNet model parameters
+patch_size: 900  # Number of samples per patch
+sample_freq: 30
+num_classes: 4
+acc_decomp: true
+embed_dim: 128  # Embedding dimension size
+kernel_size: 5
+num_lstm_layers: 2
+dropout: 0.2  # Dropout rate for the encoder
+
+# Dataset parameters
+# patch_size_samples = patch_size
+# context_window_patches = seq_len
+seq_len: 256  # Sequence length context window
+step_patches: 25 # ~ 90% overlap between adjacent windows/ 12-minute steps
+labels: light_deep_rem
+label_map:
+    deep: 0
+    light: 1
+    rem: 2
+    wake: 3
+    missing: -9
+label_priority: false
+patches_per_label: 1
+ignore_index: -9
+class_weights: null
+downsample_negative: null
+
+# Dataloader parameters
+batch_size: 512
+num_workers: 8
+prefetch_factor: 2
+pin_memory: true
+
+# Optimizer parameters
+lr: 0.001
+blr: null
+weight_decay: 0.01
+
+# Training parameters
+n_folds: 5
+train_prcnt: 1.0
+adjust_max_epochs: false
+max_epochs: 75
+grad_norm_max: 1.0
+grad_accumulation_steps: 1
+mixed_precision: true
+patience: 1000
+seed: 42
+log_interval: 10

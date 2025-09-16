@@ -1,0 +1,30 @@
+cv_folds_path: null
+n_folds: null
+val_set_json: data/splits/tbi/test_files.json
+
+model_base_dir: #/oak/stanford/groups/mignot/projects/actigraphy_fm/runs/wassed/finetune_cv/mae_bwm_tbi_full_3295561/
+results_path: /oak/stanford/groups/mignot/projects/actigraphy_fm/results/
+
+ft_epoch: 75
+
+# Labels
+labels_name: apnea
+label_map: {
+    'none': 0,
+    'ha': 1,
+    'oa': 2,
+    'ca': 2,
+}
+n_classes: 3
+# apnea_label_order = ['none', 'ha', 'oa']
+# apnea_label_names = ['None', 'HA', 'OA/CA']
+
+# Model params
+patch_size: 900
+in_channels: 3
+embed_dim: 256
+num_heads: 8
+mlp_ratio: 2
+num_layers: 12
+num_lstm_layers: 0
+max_seq_len: 256

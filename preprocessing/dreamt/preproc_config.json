@@ -1,0 +1,25 @@
+
+{ 
+    "psg_montage": [
+        "ECG",
+        "FLOW",
+        "THORAX",
+        "ABDOMEN",
+        "LAT",
+        "RAT"
+    ],
+    "psg_rename_map": {
+        "RAT": "Leg R",
+        "LAT": "Leg L"
+    },
+    "min_recording_hours": 4,
+    "calib_cube": -1,
+    "actigraphy_resample_freq": 30.0,
+    "psg_resample_freq": 100.0,
+    "psg_filter_order": 4,
+    "standardize_psg": true,
+    "hdf5_chunksize_sec": 600,
+    "input_unit_divisor": 64,
+    "scale_by_force": false,
+    "drift_correction_factor": 0.9985
+}

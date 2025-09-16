@@ -1,0 +1,41 @@
+
+{ 
+    "psg_montage": [
+    "ECG II",
+    "EEG C3-A2",
+    "EEG C4-A1",
+    "EEG F3-A2",
+    "EEG F4-A1",
+    "EEG O1-A2",
+    "EEG O2-A1",
+    "EMG Chin",
+    "EOG LOC-A2",
+    "EOG ROC-A2",
+    "Effort ABD",
+    "Effort THO",
+    "Flow Patient",
+    "SpO2"
+    ],
+    "psg_rename_map": {
+        "Effort ABD": "ABDOMEN",
+        "Effort THO": "THORAX",
+        "Flow Patient": "FLOW",
+        "ECG II": "ECG",
+        "EEG C3-A2": "EEG C3",
+        "EEG C4-A1": "EEG C4",
+        "EEG F3-A2": "EEG F3",
+        "EEG F4-A1": "EEG F4",
+        "EEG O1-A2": "EEG O1",
+        "EEG O2-A1": "EEG O2",
+        "EMG Chin": "EMG Chin",
+        "EOG LOC-A2": "EOG E1",
+        "EOG ROC-A2": "EOG E2"
+    },
+    "calib_cube": -1,
+    "actigraphy_resample_freq": 30.0,
+    "psg_resample_freq": 100.0,
+    "psg_filter_order": 4,
+    "min_recording_hours": 4,
+    "standardize_psg": true,
+    "hdf5_chunksize_sec": 600
+}

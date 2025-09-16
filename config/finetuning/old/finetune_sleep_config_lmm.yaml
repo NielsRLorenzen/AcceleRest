@@ -1,0 +1,62 @@
+# Classifier parameters (for finetuning)
+finetune_mode: token_wise
+finetune_train: head_only
+num_lstm_layers: 0
+num_classes: 4
+head_dropout: 0.2
+# hidden_dim: 512
+# Encoder parameters, These should match the pretrained model config
+in_channels: 3 # Number of input channels
+patch_size: 300  # Number of samples per token
+embed_dim: 256  # Embedding dimension size
+seq_len: 300  # Sequence length
+num_heads: 8  # Number of attention heads in transformer
+mlp_ratio: 2.67  # Ratio of hidden units in the MLP to the embedding dimension
+n_encoder_layers: 12  # Number of layers in the encoder
+encoder_dropout: 0.0  # Dropout rate for the encoder
+
+# Dataset & dataloader parameters
+train_prcnt: 1.0
+adjust_max_epochs: false
+# labels: sleep_wake
+# label_map:
+#     sleep: 0
+#     wake: 1
+#     missing: -9
+labels: light_deep_rem
+label_map:
+    deep: 0
+    light: 1
+    rem: 2
+    wake: 3
+    missing: -9
+ignore_index: -9
+seconds_per_label: 10
+overlap: 0.9 # 90% overlap, 5 minute step size
+window_size_seconds: 3000
+
+# Dataloader parameters
+batch_size: 512
+num_workers: 8
+prefetch_factor: 2
+pin_memory: true
+
+# Optimizer parameters
+lr: null
+blr: 0.001
+weight_decay: 0.01
+
+# Scheduler parameters
+warmup_epochs: 0
+cosine_annealing: false
+min_lr: 1.0e-5
+
+# Training parameters
+use_sdpa: true
+max_epochs: 75
+grad_norm_max: 1.0
+grad_accumulation_steps: 1
+mixed_precision: true
+patience: 1000
+seed: 42
+log_interval: 10

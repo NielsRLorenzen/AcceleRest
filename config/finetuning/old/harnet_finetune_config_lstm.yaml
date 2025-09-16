@@ -1,0 +1,48 @@
+# Classifier parameters (for finetuning)
+finetune_mode: token_wise
+finetune_train: head_only
+num_lstm_layers: 2
+num_classes: 4
+head_dropout: 0.4
+patch_size: 900
+harnet_model: harnet30
+
+# Dataset & dataloader parameters
+train_prcnt: 1.0
+adjust_max_epochs: false
+# labels: sleep_wake
+# label_map:
+#     sleep: 0
+#     wake: 1
+#     missing: -9
+labels: light_deep_rem
+label_map:
+    deep: 0
+    light: 1
+    rem: 2
+    wake: 3
+    missing: -9
+ignore_index: -9
+seconds_per_label: 30
+overlap: 0.9 # % overlap
+window_size_seconds: 7680
+
+# Dataloader parameters
+batch_size: 512
+num_workers: 8
+prefetch_factor: 2
+pin_memory: true
+
+# Optimizer parameters
+lr: null
+blr: 0.001
+weight_decay: 0.01
+
+# Training parameters
+max_epochs: 75
+grad_norm_max: 1.0
+grad_accumulation_steps: 4
+mixed_precision: true
+patience: 1000
+seed: 42
+log_interval: 10

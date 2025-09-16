@@ -1,0 +1,34 @@
+
+{ 
+    "psg_montage": [
+    "ECG II",
+    "PLMl",
+    "PLMr",
+    "RIP Thora",
+    "RIP Abdom",
+    "Pressure Flow"
+    ],
+    "psg_rename_map": {
+        "RIP Abdom": "ABDOMEN",
+        "RIP Thora": "THORAX",
+        "Pressure Flow": "FLOW",
+        "ECG II": "ECG",
+        "PLMr": "Leg R",
+        "PLMl": "Leg L"
+    },
+    "annotation_file_tags": { 
+        "PLM Events": "plm",
+        "Sleep profile": "hypnogram",
+        "Flow Events": "apnea",
+        "Position": "position"
+    },
+    "min_recording_hours": 4,
+    "calib_cube": -1,
+    "actigraphy_resample_freq": 30.0,
+    "psg_resample_freq": 100.0,
+    "psg_filter_order": 4,
+    "standardize_psg": true,
+    "hdf5_chunksize_sec": 600,
+    "input_unit_divisor": 16,
+    "scale_by_force": false
+}

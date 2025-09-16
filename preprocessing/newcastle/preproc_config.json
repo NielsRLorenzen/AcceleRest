@@ -1,0 +1,7 @@
+
+{ 
+    "calib_cube": -1,
+    "actigraphy_resample_freq": 30.0,
+    "min_recording_hours": 4,
+    "hdf5_chunksize_sec": 600
+}
