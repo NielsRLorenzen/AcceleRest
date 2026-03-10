@@ -10,13 +10,13 @@ def parse_args():
         '--data_files_path',
         type = str,
         help = 'Path to the directory containing the subject .h5 files.',
-        default = '/oak/stanford/groups/mignot/projects/actigraphy_fm/data/sleepaccel/',
+        default = '/oak/stanford/groups/mignot/mdige/results/takeda/preprocessed_h5/',
     )
     argparser.add_argument(
         '--output_dir',
         type=str,
         help = 'Directory to save the output h5 files',
-        default = '/oak/stanford/groups/mignot/projects/actigraphy_fm/data/splits/sleepaccel/',
+        default = '/oak/stanford/groups/mignot/projects/actigraphy_fm/data/splits/takeda/',
     )
     argparser.add_argument(
         '--test_prcnt',
@@ -28,7 +28,7 @@ def parse_args():
         '--n_cv',
         type = int,
         help = 'Number of cross-validation folds to create from the train set.',
-        default = 1,
+        default = 0,
     )
     argparser.add_argument(
         '--val_prcnt',

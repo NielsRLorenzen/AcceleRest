@@ -151,7 +151,7 @@ class UKB_preprocessing():
             chunksize=int(1e6),
         )
 
-        # Make detected nonwear periods NaN
+        # Make detected nonwear periods NaNI
         data, nonwear_info = actipy.processing.detect_nonwear(
             data, 
             patience = f'{self.nonwear_patience}m', 

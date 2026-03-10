@@ -1,0 +1,20 @@
+val_set_json: /oak/stanford/groups/mignot/projects/actigraphy_fm/data/splits/rbd/controls/test_files.json
+
+#Use model trained on all internal training and validation sets
+model_base_dir: /oak/stanford/groups/mignot/projects/actigraphy_fm/runs/wassed/finetune_cv/mae_bwm_apnea_internal_2c_4184464/
+results_path: /oak/stanford/groups/mignot/projects/actigraphy_fm/results/accelerest_rbd_apnea/controls/
+
+ft_epoch: 75
+
+# Model params
+n_classes: 2
+patch_size: 900
+in_channels: 3
+embed_dim: 256
+num_heads: 8
+mlp_ratio: 2
+num_layers: 12
+max_seq_len: 256
+num_lstm_layers: 0
+lstm_dim: 0 # 0 
+head: linear

@@ -748,3 +748,84 @@ class SubjectEvaluationDataset(Dataset):
 
     def __getitem__(self, idx):
         return self.data_windows[idx], self.label_windows[idx]
+
+
+class SubjectDataset(Dataset):
+    '''Dataset with indeces that are windows of data from a list of 
+    files. The windows are created by sliding a window of size 
+    window_size_seconds with a specified overlap. 
+    All data is loaded into memory.
+
+    Args:
+        file (str): 
+            Path to the data h5 file.
+
+        patch_size_samples (int):
+            Number of samples in patch (token).
+
+        context_window_patches (int):
+            Number of patches that go into a single data window.
+
+        step_patches (int):
+            The number of patches to move the cotext window when
+            creating each input window.
+    '''
+    def __init__(
+            self,
+            file: str,
+            patch_size_samples: int,
+            context_window_patches: int,
+            step_patches: int,
+        ):
+        super().__init__()
+        self.file = file
+        self.patch_samples = patch_size_samples
+        self.window_patches = context_window_patches
+        self.step_patches = step_patches
+        
+        # Calculate the window length and step size in samples
+        self.window_samples = int(self.window_patches * self.patch_samples)
+        self.step_samples = int(self.step_patches * self.patch_samples)
+
+        # Also sets self.data and self.labels_seq with the unwindowed shapes
+        self.data_windows = self.get_windows(file)
+
+    def get_windows(self, file: str):
+        '''Get windows of data from a file.
+        args:
+            file (str):
+                Path to the file to load data from.
+
+        returns:
+            data_tensor (torch.Tensor):
+                Tensor with the data windows.
+        '''
+        with h5py.File(file, 'r', rdcc_nbytes=1024**3) as f:
+            # Get data
+            data = f[f'data/accelerometry']
+            n_samples = data.shape[1]
+
+            # Load data into memory
+            data_tensor = torch.from_numpy(np.array(data))
+
+            # Store original data
+            self.data = data_tensor
+            # n_windows = ((n_samples - self.window_samples) // self.step_samples) + 1
+            # last_covered_sample = (n_windows - 1) * self.step_samples + self.window_samples
+            # n_dropped_samples = n_samples-last_covered_sample#(((n_samples - self.window_samples) % self.step_samples))
+
+            # Unfold the data into windows
+            # -> shape (n_channels, n_windows, window_size)
+            data_tensor = data_tensor.unfold(-1, self.window_samples, self.step_samples)
+
+            # Move new window dimension to the front as batch dimension
+            # -> shape (n_windows, n_channels, window_size)
+            data_tensor = data_tensor.permute(1,0,2)
+
+            return data_tensor
+
+    def __len__(self):
+        return len(self.data_windows)
+
+    def __getitem__(self, idx):
+        return self.data_windows[idx]

@@ -46,13 +46,17 @@ class Finetuner(Trainer):
             else:
                 y_hat = self.model(x)
             loss = self.criterion(y_hat.transpose(1,2).squeeze(), y.squeeze())
-
-        if torch.isnan(loss).any():
-            print('Nan loss encountered, exiting...')
-            print('labels',y)
-            print('preds',y_hat)
-            sys.exit(1)
         
+        if torch.isnan(loss).all():
+                print('All NaN loss encountered, exiting...')
+                print('labels',y)
+                print('preds',y_hat.transpose(1,2))
+                sys.exit(1)
+
+        elif torch.isnan(loss).any():
+            print(f'{torch.isnan(loss).sum()} NaN values in loss, replacing...')
+            loss = torch.nan_to_num(loss, nan=0.0, posinf=0.0, neginf=0.0)
+
         # Normalize loss to account for gradient accumulation
         loss = loss / args.grad_accumulation_steps
 
