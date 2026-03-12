@@ -44,6 +44,7 @@ def get_roformer(args, pretrained_model):
     checkpoint = torch.load(pretrained_model, map_location='cpu', weights_only=True)
     model.load_state_dict(checkpoint['model'], strict=True) # Load finetuned classifier parameters
     return model
+    
 
 def eval(args, pretrained_model, device, fold = None):
     if pretrained_model == 'sleepnet':

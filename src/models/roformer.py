@@ -246,6 +246,9 @@ class RoFormerClassifier(nn.Module):
         assert (mode in ['attention_pool', 'global_pool', 'token_wise']
         ), f"Invalid mode: {mode}. Choose from ['attention_pool', 'global_pool', 'token_wise']"
         self.mode = mode
+        self.patch_size = patch_size
+        self.max_seq_len = max_seq_len
+        
         self.patch_embedding = PatchEmbedding1D(
             patch_size,
             in_channels,
