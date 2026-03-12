@@ -67,6 +67,8 @@ class DualHeadAcceleRest(nn.Module):
         #Ensure identical encoder backbones
         if not identical_backbone(sleepstage_model.state_dict(), respevent_model.state_dict()):
             raise RuntimeError("The two AcceleRest models do not share identical encoders.")
+        self.patch_size = sleepstage_model.patch_size
+        self.max_seq_len = sleepstage_model.max_seq_len
 
         self.patch_embedding = sleepstage_model.patch_embedding
         self.encoder = sleepstage_model.encoder

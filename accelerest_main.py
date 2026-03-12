@@ -26,7 +26,7 @@ def parse_args():
                         help='Do not return predicted sleep stages.')
     parser.add_argument('--no_respiratory_events', dest='get_respiratory_events', action='store_false',
                         help='Do not return predicted respiratory events.')
-    arser.set_defaults(get_sleepstages=True, get_respiratory_events=True)
+    parser.set_defaults(get_sleepstages=True, get_respiratory_events=True)
 
     # Select intermediate outputs to save
     parser.add_argument('--get_embeddings', action='store_true',
@@ -97,13 +97,13 @@ def outputs_exist(output_dir, args):
 def eval(args, device):
     # Get the AcceleRest model
     if args.get_sleepstages and args.get_respiratory_events:
-        model = torch.hub.load('NielsRLorenzen/AcceleRest', 'accelerest_dualhead')
+        model = torch.hub.load('NielsRLorenzen/AcceleRest', 'accelerest_dualhead', trust_repo='check')
     
     elif args.get_sleepstages:
-        model = torch.hub.load('NielsRLorenzen/AcceleRest', 'accelerest_sleepstage')
+        model = torch.hub.load('NielsRLorenzen/AcceleRest', 'accelerest_sleepstage', trust_repo='check')
 
     elif args.get_respiratory_events:
-        model = torch.hub.load('NielsRLorenzen/AcceleRest', 'accelerest_respevent')
+        model = torch.hub.load('NielsRLorenzen/AcceleRest', 'accelerest_respevent', trust_repo='check')
     
     else:
         raise ValueError('Select either --get_sleepstages or --get_respiratory_events or both')
