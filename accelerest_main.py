@@ -44,13 +44,7 @@ def parse_args():
 
     return args
 
-def outputs_exist(output_dir, args):
-    prefixes = []
-    if args.get_sleepstages:
-        prefixes.append('sleepstage')
-    if args.get_respiratory_events:
-        prefixes.append('respevents')
-
+def outputs_exist(output_dir: str, prefixes: list, args):
     prefix_preds_exist = []
     for prefix in prefixes:
         soft_preds_exists = os.path.isfile(
@@ -77,7 +71,7 @@ def outputs_exist(output_dir, args):
 
 def eval(args, device):
     model = torch.hub.load(
-        'NielsRLorenzen/AcceleRest',
+        'NielsRLorenzen/AcceleRest:multihead',
         'accelerest_multihead',
         linear_sleepstage = args.linear_sleepstages,
         lstm_sleepstage = args.lstm_sleepstages,
@@ -102,7 +96,7 @@ def eval(args, device):
         )
         if os.path.exists(individual_output_dir):
             # Check if all output files exist
-            if outputs_exist(individual_output_dir, args):
+            if outputs_exist(individual_output_dir, model.names, args):
                 continue
         
         else:

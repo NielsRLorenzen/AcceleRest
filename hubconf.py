@@ -101,7 +101,7 @@ def accelerest_multihead(
         heads.append(accelerest_sleepstage(pretrained = pretrained))
         names.append('linear_sleepstages')
     if lstm_sleepstage:
-        heads.append(accelerest_sleepstage_lstmc(pretrained = pretrained))
+        heads.append(accelerest_sleepstage_lstm(pretrained = pretrained))
         names.append('lstm_sleepstages')
     if linear_respevent:
         heads.append(accelerest_respevent(pretrained = pretrained))
@@ -131,15 +131,15 @@ class MultiHeadAcceleRest(nn.Module):
     def get_head(model):
         if hasattr(model, 'lstm'):
             head = nn.Sequential(
-                sleepstage_model_lstmc.norm,
-                sleepstage_model_lstmc.pre_lstm,
-                sleepstage_model_lstmc.lstm,
-                sleepstage_model_lstmc.classification_head,
+                model.norm,
+                model.pre_lstm,
+                model.lstm,
+                model.classification_head,
             )
         else:
             head = nn.Sequential(
-            sleepstage_model.norm,
-            sleepstage_model.classification_head,
+            model.norm,
+            model.classification_head,
         )
         return head
 
