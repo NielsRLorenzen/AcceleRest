@@ -10,23 +10,26 @@ from src.datasets.sleep_dataset import SubjectDataset
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    # Base parameters
+    # IO parameters
     parser.add_argument('--data_file_dir', type=str, required = True,
                         help='Path to folder with h5 files to run AcceleRest on.')
     parser.add_argument('--output_dir', type=str, default=None,
                         help='Path to folder to save accelerest outputs in.'
                              'Defaults to <data_file_dir>/accelerest_outputs')
+                             
+    # Select which predictions to return
+    parser.add_argument('--lstm_sleepstages', action='store_true',
+                        help='Return sleep stages predicted with an LSTM-C head.')
+    parser.add_argument('--linear_sleepstages', action='store_true',
+                        help='Return sleep stages predicted with a linear head.')
+    parser.add_argument('--linear_resp_events', action='store_true',
+                        help='Return respiratory events predicted with a linear head.')
+
+    # Processing parameters
     parser.add_argument('--context_window_shift', type=int, default=1,
                         help='The number of 30 sec patches to shift consecutive windows.')
     parser.add_argument('--max_batch_size', type=int, default=32,
                         help='Batch size for inference.')
-
-    # Deselect which predictions to return
-    parser.add_argument('--no_sleepstages', dest='get_sleepstages', action='store_false',
-                        help='Do not return predicted sleep stages.')
-    parser.add_argument('--no_respiratory_events', dest='get_respiratory_events', action='store_false',
-                        help='Do not return predicted respiratory events.')
-    parser.set_defaults(get_sleepstages=True, get_respiratory_events=True)
 
     # Select intermediate outputs to save
     parser.add_argument('--get_embeddings', action='store_true',
@@ -40,28 +43,6 @@ def parse_args():
         args.output_dir = os.path.join(args.data_file_dir, "accelerest_outputs")
 
     return args
-
-def outputs_exist(output_dir, args):
-    soft_preds_exists = os.path.isfile(
-        os.path.join(output_dir,'soft_preds.npy')
-    )
-    
-    if getattr(args, "window_wise_predictions", False):
-        window_wise_preds_exists = os.path.isfile(
-            os.path.join(output_dir, "window_wise_logits.dat")
-        )
-        window_wise_preds_meta_exists = os.path.isfile(
-            os.path.join(output_dir, "window_wise_logits_meta.npy")
-        )
-        all_exist = (
-            soft_preds_exists and 
-            window_wise_preds_exists and 
-            window_wise_preds_meta_exists
-        )
-    else:
-        all_exist = soft_preds_exists
-
-    return all_exist
 
 def outputs_exist(output_dir, args):
     prefixes = []
@@ -95,18 +76,14 @@ def outputs_exist(output_dir, args):
     return all(prefix_preds_exist)
 
 def eval(args, device):
-    # Get the AcceleRest model
-    if args.get_sleepstages and args.get_respiratory_events:
-        model = torch.hub.load('NielsRLorenzen/AcceleRest', 'accelerest_dualhead', trust_repo='check')
-    
-    elif args.get_sleepstages:
-        model = torch.hub.load('NielsRLorenzen/AcceleRest', 'accelerest_sleepstage', trust_repo='check')
-
-    elif args.get_respiratory_events:
-        model = torch.hub.load('NielsRLorenzen/AcceleRest', 'accelerest_respevent', trust_repo='check')
-    
-    else:
-        raise ValueError('Select either --get_sleepstages or --get_respiratory_events or both')
+    model = torch.hub.load(
+        'NielsRLorenzen/AcceleRest',
+        'accelerest_multihead',
+        linear_sleepstage = args.linear_sleepstages,
+        lstm_sleepstage = args.lstm_sleepstages,
+        linear_respevent = args.linear_resp_events,
+        trust_repo='check',
+    )
 
     model.to(device)
     model.eval()
@@ -152,7 +129,7 @@ def init_storage(output_dir, prefix, num_windows, window_size, num_classes, args
 
     return storage
 
-def store_outputs(storage, y_hat, batch_start_idx):
+def store_outputs(storage: dict, prefix:str, y_hat: torch.Tensor, batch_start_idx:int):
     batch_size, window_size, num_classes = y_hat.shape
 
     # Fill slice of memmap corresponding to batch (optional)
@@ -208,49 +185,28 @@ def eval_single(file, model, device, output_dir, args):
 
     num_windows = len(subject_set)
     window_size = model.max_seq_len
-    nclass_sleep = 4
-    nclass_resp = 2
 
-    # Initialize output storage
-    if args.get_sleepstages:
-        sleepstage_storage = init_storage(
-            output_dir, "sleepstage", num_windows, window_size, nclass_sleep, args,
-        )
-
-    if args.get_respiratory_events:
-        respevent_storage = init_storage(
-            output_dir, "respevent", num_windows, window_size, nclass_resp, args,
-        )
+    storage = {}
 
     with torch.no_grad():
         for batch_idx, x in enumerate(loader):
-            x = x.to(device)
-            output = model(x)
-
             batch_start_idx = batch_idx * args.max_batch_size
+            
+            x = x.to(device)
+            outputs = model(x)
 
-            # Get model outputs
-            if args.get_sleepstages and args.get_respiratory_events:
-                sleep_logits, resp_logits = output
-                sleep_logits = sleep_logits.cpu()
-                resp_logits = resp_logits.cpu()
+            for name, logits in outputs.items():
+                if name not in storage.keys():
+                    # Initialize output storage for each prediction head
+                    _, _, num_classes = logits.shape
+                    storage[name] = init_storage(
+                        output_dir, name, num_windows, window_size, num_classes, args,
+                    )   
+                logits = logits.cpu()
+                store_outputs(name, logits, batch_start_idx)
 
-                store_outputs(sleepstage_storage, sleep_logits, batch_start_idx)
-                store_outputs(respevent_storage, resp_logits, batch_start_idx)
-
-            elif args.get_sleepstages:
-                sleep_logits = output.cpu()
-                store_outputs(sleepstage_storage, sleep_logits, batch_start_idx)
-
-            elif args.get_respiratory_events:
-                resp_logits = output.cpu()
-                store_outputs(respevent_storage, resp_logits, batch_start_idx)
-
-    if args.get_sleepstages:
-        finalize_head_storage(sleepstage_storage, output_dir, "sleepstage")
-
-    if args.get_respiratory_events:
-        finalize_head_storage(respevent_storage, output_dir, "respevent")
+    for name in storage.keys():
+        finalize_storage(storage[name], output_dir, name)
 
 def main(args):
     device = 'cuda' if torch.cuda.is_available() else 'cpu'

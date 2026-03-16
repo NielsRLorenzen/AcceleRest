@@ -25,8 +25,36 @@ def accelerest_sleepstage(pretrained = True):
     if pretrained:
         # print(f'Loading {config.pretrained_model}')
         repo = "https://github.com/NielsRLorenzen/AcceleRest/" 
-        release = "releases/download/v0.1.0/"
+        release = "releases/download/v0.1.1/"
         weights = "accelerest_sleepstage_linear_weights.pt"
+        url = repo + release + weights
+        state_dict = torch.hub.load_state_dict_from_url(url, map_location='cpu', weights_only=True)
+        model.load_state_dict(state_dict, strict=True) 
+    
+    return model
+
+def accelerest_sleepstage_lstm(pretrained = True):
+    model = RoFormerClassifier(
+        mode = "token_wise",
+        num_classes = 4,
+        patch_size = 900,
+        in_channels = 3,
+        embed_dim = 256,
+        num_heads = 8,
+        mlp_ratio = 2,
+        num_layers = 12,
+        num_lstm_layers = 2,
+        max_seq_len = 256,
+        lstm_dim = 4,
+        head = 'linear', 
+        head_dropout = 0,
+    )
+
+    if pretrained:
+        # print(f'Loading {config.pretrained_model}')
+        repo = "https://github.com/NielsRLorenzen/AcceleRest/" 
+        release = "releases/download/v0.1.1/"
+        weights = "accelerest_sleepstage_lstmc_weights.pt"
         url = repo + release + weights
         state_dict = torch.hub.load_state_dict_from_url(url, map_location='cpu', weights_only=True)
         model.load_state_dict(state_dict, strict=True) 
@@ -53,7 +81,7 @@ def accelerest_respevent(pretrained = True):
     if pretrained:
         # print(f'Loading {config.pretrained_model}')
         repo = "https://github.com/NielsRLorenzen/AcceleRest/" 
-        release = "releases/download/v0.1.0/"
+        release = "releases/download/v0.1.1/"
         weights = "accelerest_respevent_linear_weights.pt"
         url = repo + release + weights
         state_dict = torch.hub.load_state_dict_from_url(url, map_location='cpu', weights_only=True)
@@ -61,39 +89,68 @@ def accelerest_respevent(pretrained = True):
     
     return model
 
-class DualHeadAcceleRest(nn.Module):
-    def __init__(self, sleepstage_model, respevent_model):
+def accelerest_multihead(
+    linear_sleepstage:bool = False,
+    lstm_sleepstage:bool = False,
+    linear_respevent:bool = False,
+    pretrained:bool = True,
+):
+    heads = []
+    names = []
+    if linear_sleepstage:
+        heads.append(accelerest_sleepstage(pretrained = pretrained))
+        names.append('linear_sleepstages')
+    if lstm_sleepstage:
+        heads.append(accelerest_sleepstage_lstmc(pretrained = pretrained))
+        names.append('lstm_sleepstages')
+    if linear_respevent:
+        heads.append(accelerest_respevent(pretrained = pretrained))
+        names.append('linear_respevents')
+    if len(heads) == 0:
+        raise RuntimeError('Specify at least one prediction head.')
+    model = MultiHeadAcceleRest(heads, names)
+
+    return model
+
+class MultiHeadAcceleRest(nn.Module):
+    def __init__(self, models = list, names = list):
         super().__init__()
         #Ensure identical encoder backbones
-        if not identical_backbone(sleepstage_model.state_dict(), respevent_model.state_dict()):
-            raise RuntimeError("The two AcceleRest models do not share identical encoders.")
-        self.patch_size = sleepstage_model.patch_size
-        self.max_seq_len = sleepstage_model.max_seq_len
+        for i in range(len(models)-1):
+            if not identical_backbone(models[i].state_dict(), models[i+1].state_dict()):
+                raise RuntimeError(f"The two AcceleRest models at {i} and {i+1} do not share identical encoders.")
+        
+        self.patch_size = models[0].patch_size
+        self.max_seq_len = models[0].max_seq_len
 
-        self.patch_embedding = sleepstage_model.patch_embedding
-        self.encoder = sleepstage_model.encoder
-
-        self.sleepstage_norm = sleepstage_model.norm
-        self.sleepstage_head = sleepstage_model.classification_head
-
-        self.respevent_norm = respevent_model.norm
-        self.respevent_head = respevent_model.classification_head
+        self.patch_embedding = models[0].patch_embedding
+        self.encoder = models[0].encoder
+        self.names = names
+        self.heads = [self.get_head(model) for model in models]
+    
+    def get_head(model):
+        if hasattr(model, 'lstm'):
+            head = nn.Sequential(
+                sleepstage_model_lstmc.norm,
+                sleepstage_model_lstmc.pre_lstm,
+                sleepstage_model_lstmc.lstm,
+                sleepstage_model_lstmc.classification_head,
+            )
+        else:
+            head = nn.Sequential(
+            sleepstage_model.norm,
+            sleepstage_model.classification_head,
+        )
+        return head
 
     def forward(self, x):
-        features = self.encoder(
-            self.patch_embedding(x),
-            use_sdpa=True,
-        )
+        features = self.encoder(self.patch_embedding(x), use_sdpa=True)
 
-        sleepstages = self.sleepstage_head(
-            self.sleepstage_norm(features)
-        )
+        outputs = dict()
+        for i, head in enumerate(heads):
+            outputs[self.names[i]] = head(features)
 
-        respevents = self.respevent_head(
-            self.respevent_norm(features)
-        )
-
-        return sleepstages, respevents
+        return outputs
 
 def identical_backbone(sd1, sd2):
     '''Compare two AcceleRest encoder statedicts to ensure identical parameters'''
@@ -113,14 +170,3 @@ def identical_backbone(sd1, sd2):
                 print(f"Mismatch in {k}, max abs diff = {max_diff}")
                 return False
     return True
-
-def accelerest_dualhead(pretrained = True):
-    # Load accelerest w. sleep stage head
-    sleepstage = accelerest_sleepstage(pretrained = pretrained)
-
-    # Load accelerest w. resp event head
-    respevent = accelerest_respevent(pretrained = pretrained)
-
-    model = DualHeadAcceleRest(sleepstage, respevent)
-
-    return model
