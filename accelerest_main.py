@@ -22,7 +22,7 @@ def parse_args():
                         help='Return sleep stages predicted with an LSTM-C head.')
     parser.add_argument('--linear_sleepstages', action='store_true',
                         help='Return sleep stages predicted with a linear head.')
-    parser.add_argument('--linear_resp_events', action='store_true',
+    parser.add_argument('--linear_respevents', action='store_true',
                         help='Return respiratory events predicted with a linear head.')
 
     # Processing parameters
@@ -44,7 +44,15 @@ def parse_args():
 
     return args
 
-def outputs_exist(output_dir: str, prefixes: list, args):
+def outputs_exist(output_dir: str, args):
+    prefixes = []
+    if args.lstm_sleepstages:
+        prefixes.append('lstm_sleepstages')
+    if args.linear_sleepstages:
+        prefixes.append('linear_sleepstages')
+    if args.linear_respevents:
+        prefixes.append('linear_respevents')
+
     prefix_preds_exist = []
     for prefix in prefixes:
         soft_preds_exists = os.path.isfile(
@@ -75,7 +83,7 @@ def eval(args, device):
         'accelerest_multihead',
         linear_sleepstage = args.linear_sleepstages,
         lstm_sleepstage = args.lstm_sleepstages,
-        linear_respevent = args.linear_resp_events,
+        linear_respevent = args.linear_respevents,
         trust_repo='check',
         force_reload = True,
     )
@@ -97,7 +105,7 @@ def eval(args, device):
         )
         if os.path.exists(individual_output_dir):
             # Check if all output files exist
-            if outputs_exist(individual_output_dir, model.names, args):
+            if outputs_exist(individual_output_dir, args):
                 continue
         
         else:
@@ -124,7 +132,7 @@ def init_storage(output_dir, prefix, num_windows, window_size, num_classes, args
 
     return storage
 
-def store_outputs(storage: dict, prefix:str, y_hat: torch.Tensor, batch_start_idx:int):
+def store_outputs(storage: dict, y_hat: torch.Tensor, batch_start_idx:int):
     batch_size, window_size, num_classes = y_hat.shape
 
     # Fill slice of memmap corresponding to batch (optional)
@@ -177,16 +185,26 @@ def eval_single(file, model, device, output_dir, args):
         drop_last=False,
         pin_memory=(device == "cuda"),
     )
-
+    
     num_windows = len(subject_set)
     window_size = model.max_seq_len
 
-    storage = {}
+    print(f'Processing file: {os.path.basename(file)}')
+    print(f'Number of windows: {num_windows}')
 
+    storage = {}
+    next_progress = 0.1
+    
     with torch.no_grad():
-        for batch_idx, x in enumerate(loader):
+        for batch_idx, x in enumerate(loader): 
             batch_start_idx = batch_idx * args.max_batch_size
             
+            # Progress reporting
+            progress = batch_start_idx / num_windows
+            if progress >= next_progress:
+                print(f"{int(next_progress*100)}% of windows processed")
+                next_progress += 0.1
+
             x = x.to(device)
             outputs = model(x)
 
@@ -198,7 +216,7 @@ def eval_single(file, model, device, output_dir, args):
                         output_dir, name, num_windows, window_size, num_classes, args,
                     )   
                 logits = logits.cpu()
-                store_outputs(name, logits, batch_start_idx)
+                store_outputs(storage[name], logits, batch_start_idx)
 
     for name in storage.keys():
         finalize_storage(storage[name], output_dir, name)
