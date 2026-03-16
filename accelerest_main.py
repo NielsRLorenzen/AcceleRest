@@ -77,6 +77,7 @@ def eval(args, device):
         lstm_sleepstage = args.lstm_sleepstages,
         linear_respevent = args.linear_resp_events,
         trust_repo='check',
+        force_reload = True,
     )
 
     model.to(device)

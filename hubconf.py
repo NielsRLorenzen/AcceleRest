@@ -128,7 +128,7 @@ class MultiHeadAcceleRest(nn.Module):
         self.names = names
         self.heads = [self.get_head(model) for model in models]
     
-    def get_head(model):
+    def get_head(self, model):
         if hasattr(model, 'lstm'):
             head = nn.Sequential(
                 model.norm,
