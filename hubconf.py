@@ -147,7 +147,7 @@ class MultiHeadAcceleRest(nn.Module):
         features = self.encoder(self.patch_embedding(x), use_sdpa=True)
 
         outputs = dict()
-        for i, head in enumerate(heads):
+        for i, head in enumerate(self.heads):
             outputs[self.names[i]] = head(features)
 
         return outputs
