@@ -113,7 +113,7 @@ def accelerest_multihead(
     return model
 
 class MultiHeadAcceleRest(nn.Module):
-    def __init__(self, models = list, names = list):
+    def __init__(self, models: list[nn.Module], names: list[str]):
         super().__init__()
         #Ensure identical encoder backbones
         for i in range(len(models)-1):
@@ -125,12 +125,14 @@ class MultiHeadAcceleRest(nn.Module):
 
         self.patch_embedding = models[0].patch_embedding
         self.encoder = models[0].encoder
-        self.names = names
-        self.heads = [self.get_head(model) for model in models]
+        self.heads = nn.ModuleDict({
+            name: self.get_head(model)
+            for name, model in zip(names, models)
+        })
     
     def get_head(self, model):
         if hasattr(model, 'lstm'):
-            head = nn.Sequential(
+            head = LSTMHead(
                 model.norm,
                 model.pre_lstm,
                 model.lstm,
@@ -146,11 +148,26 @@ class MultiHeadAcceleRest(nn.Module):
     def forward(self, x):
         features = self.encoder(self.patch_embedding(x), use_sdpa=True)
 
-        outputs = dict()
-        for i, head in enumerate(self.heads):
-            outputs[self.names[i]] = head(features)
+        outputs = {}
+        for name, head in self.heads.items():
+            outputs[name] = head(features)
 
         return outputs
+
+class LSTMHead(nn.Module):
+    def __init__(self, norm, pre_lstm, lstm, classification_head):
+        super().__init__()
+        self.norm = norm
+        self.pre_lstm = pre_lstm
+        self.lstm = lstm
+        self.classification_head = classification_head
+
+    def forward(self, x):
+        x = self.norm(x)
+        x = self.pre_lstm(x)
+        x, _ = self.lstm(x)
+        x = self.classification_head(x)
+        return x
 
 def identical_backbone(sd1, sd2):
     '''Compare two AcceleRest encoder statedicts to ensure identical parameters'''
@@ -170,3 +187,4 @@ def identical_backbone(sd1, sd2):
                 print(f"Mismatch in {k}, max abs diff = {max_diff}")
                 return False
     return True
+
