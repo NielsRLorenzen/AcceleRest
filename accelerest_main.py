@@ -79,7 +79,7 @@ def outputs_exist(output_dir: str, args):
 
 def eval(args, device):
     model = torch.hub.load(
-        'NielsRLorenzen/AcceleRest:multihead',
+        'NielsRLorenzen/AcceleRest',
         'accelerest_multihead',
         linear_sleepstage = args.linear_sleepstages,
         lstm_sleepstage = args.lstm_sleepstages,
@@ -219,7 +219,7 @@ def eval_single(file, model, device, output_dir, args):
                 store_outputs(storage[name], logits, batch_start_idx)
 
     for name in storage.keys():
-        finalize_storage(storage[name], output_dir, name)
+        finalize_head_storage(storage[name], output_dir, name)
 
 def main(args):
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
