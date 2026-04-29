@@ -1,6 +1,17 @@
 # AcceleRest
 
 ## Getting started
+### Step 1: Clone this repo
+Change your working directory to where you want to clone the repo:
+```
+cd /path/to/repo/
+```
+and paste the following command:
+```
+git clone https://github.com/NielsRLorenzen/AcceleRest.git
+```
+
+### Step 2: Preprocessing your files
 Currently, your raw data files (.cwa, .csv, .bin, etc.) must first be preprocessed manually, e.g. resampling to 30Hz, calibrated to gravity, and non-wear periods set to NaN, and then saved as an array of [axes X n_samples] into a .h5 format with the data stored in 'data/accelerometry'.
 
 The following code:
@@ -13,6 +24,7 @@ with h5py.File(file, 'r', rdcc_nbytes=1024**3) as f:
 ```
 Should result in the number of samples being printed.
 
+### Step 3: Running AcceleRest
 Use this commandline prompt and edit the paths appropriately to your directory structure: 
 ```
 python /path/to/repo/AcceleRest/accelerest_main.py --data_file_dir /path/to/data/dir/ --output_dir /path/to/output/dir/ --lstm_sleepstages --linear_sleepstages --linear_respevents --context_window_shift 1 --max_batch_size 16 --window_wise_predictions 
@@ -34,7 +46,7 @@ The other options control the following behaviors:
  --max_batch_size # Number of context windows to include in a single forward-pass. Higher is faster but more memory intensive.
  --window_wise_predictions # Include to return a memmap file with an array of predictions per context window in addition to the cross-window averaged predictions.
  ```
-### Outputs
+### Step 4: Analysing Outputs
 For each specified prediction head the following files are saved:
 ```
 /path/to/output/dir/{prefix}_soft_preds.npy
