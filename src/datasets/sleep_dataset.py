@@ -829,3 +829,47 @@ class SubjectDataset(Dataset):
 
     def __getitem__(self, idx):
         return self.data_windows[idx]
+
+class AccelerometryDataset(Dataset):
+    '''This dataset is designed to handle continous recordings from single
+    subjects.
+
+    args:
+        accelerometry (np.ndarray):
+            The (axes X samples) array to create windows from.
+    '''
+    def __init__(
+            self,
+            accelerometry: np.ndarray,
+            patch_size_samples: int,
+            context_window_patches: int,
+            step_patches: int,
+        ):
+        super().__init__()
+        if accelerometry.shape[0] != 3:
+            raise ValueError(f'Unexpected number of axes {accelerometry.shape[0]}')
+
+        self.data = torch.from_numpy(np.array(accelerometry))
+        self.patch_samples = patch_size_samples
+        self.window_patches = context_window_patches
+        self.step_patches = step_patches
+        
+        # Calculate the window length and step size in samples
+        self.window_samples = int(self.window_patches * self.patch_samples)
+        self.step_samples = int(self.step_patches * self.patch_samples)
+
+        if self.data.shape[1] < self.window_samples:
+            raise RuntimeError(f"Number of samples {data.shape[1]} not enough for window size {self.window_samples}.")
+
+        # Unfold the data into windows -> shape (axes, n_windows, window_size)
+        data_windows = self.data.unfold(-1, self.window_samples, self.step_samples)
+        
+        # Move new window dimension to the front as batch dimension
+        # -> shape (n_windows, axes, window_size)
+        self.data_windows = data_windows.permute(1,0,2)
+
+    def __len__(self):
+        return len(self.data_windows)
+
+    def __getitem__(self, idx):
+        return self.data_windows[idx]        

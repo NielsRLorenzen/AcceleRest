@@ -145,8 +145,8 @@ class MultiHeadAcceleRest(nn.Module):
         )
         return head
 
-    def forward(self, x):
-        features = self.encoder(self.patch_embedding(x), use_sdpa=True)
+    def forward(self, x, use_sdpa = True):
+        features = self.encoder(self.patch_embedding(x), use_sdpa=use_sdpa)
 
         outputs = {}
         for name, head in self.heads.items():

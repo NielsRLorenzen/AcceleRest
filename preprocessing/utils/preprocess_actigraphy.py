@@ -188,7 +188,7 @@ def preprocess_actigraphy_df(
         'y': f"{y_col}{output_suffix}",
         'z': f"{z_col}{output_suffix}"
     })
-    all_info['output_columns'] = list(output_df.columns)
+    all_info['output_columns'] = list(output_df.coluemns)
     all_info['output_shape'] = list(output_df.shape)
 
     return output_df, all_info

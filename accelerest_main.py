@@ -1,22 +1,28 @@
 import argparse
 import os, glob
 import numpy as np
-import yaml
+import pandas as pd
+import actipy
 
 import torch
 from torch.utils.data import DataLoader, SequentialSampler
 
-from src.datasets.sleep_dataset import SubjectDataset
+from src.datasets.sleep_dataset import AccelerometryDataset
 
 def parse_args():
     parser = argparse.ArgumentParser()
     # IO parameters
     parser.add_argument('--data_file_dir', type=str, required = True,
-                        help='Path to folder with h5 files to run AcceleRest on.')
+                        help='Path to folder with raw accelerometry data files to run AcceleRest on.')
     parser.add_argument('--output_dir', type=str, default=None,
                         help='Path to folder to save accelerest outputs in.'
                              'Defaults to <data_file_dir>/accelerest_outputs')
-                             
+    parser.add_argument('--file_type', type=str, default = 'h5',
+                        help='accelerometry file extension, currently h5 or cwa')
+
+    parser.add_argument('--save_preprocessed', action='store_true',
+                        help='Whether to save the preprocessed data.')
+    
     # Select which predictions to return
     parser.add_argument('--lstm_sleepstages', action='store_true',
                         help='Return sleep stages predicted with an LSTM-C head.')
@@ -92,7 +98,11 @@ def eval(args, device):
     model.eval()
 
     # Get files
-    files = glob.glob(os.path.join(args.data_file_dir, '*.h5'))
+    args.file_type = args.file_type.lstrip('.')
+    print(f'Searching for files with .{args.file_type} extension')
+    files = glob.glob(os.path.join(args.data_file_dir, f'*.{args.file_type}*'))
+
+    print(f'Processing {len(files)} files.')
 
     # Make overall output dir
     os.makedirs(args.output_dir, exist_ok = True)
@@ -101,7 +111,7 @@ def eval(args, device):
         # Make individual output dirs if they don't exist
         individual_output_dir = os.path.join(
             args.output_dir,
-            os.path.splitext(os.path.basename(file))[0]
+            os.path.basename(file).rsplit('.')[0],
         )
         if os.path.exists(individual_output_dir):
             # Check if all output files exist
@@ -170,25 +180,54 @@ def finalize_head_storage(storage, output_dir, prefix):
     )
 
 def eval_single(file, model, device, output_dir, args):
-    subject_set = SubjectDataset(
-        file=file,
+    if args.file_type == 'h5':
+        # Read project-native h5 format
+        with h5py.File(file, 'r', rdcc_nbytes=1024**3) as f:
+            data_array = np.array(f['data/accelerometry'])
+    
+    elif args.file_type == 'cwa':
+        # Use actipy to read and process raw file
+        dataframe, info = actipy.read_device(
+            file,
+            lowpass_hz = 15,
+            calibrate_gravity = True,
+            detect_nonwear = False,
+            resample_hz = 30,
+            start_time = None,
+            end_time = None,
+            skipdays = 0,
+            cutdays = 0,
+            start_first_complete_minute = False,
+            calibrate_gravity_kwargs = None,
+            flag_nonwear_kwargs = None,
+            verbose = True,
+        )
+        processed_file = os.path.basename(file).rsplit('.')[0] + '.csv'
+        if args.save_preprocessed:
+            dataframe.to_csv(
+                os.path.join(output_dir, processed_file),
+            )
+        data_array = dataframe[['x','y','z']].to_numpy(dtype=np.float32).T
+
+    subject_dataset = AccelerometryDataset(
+        accelerometry=data_array,
         patch_size_samples=model.patch_size,
         context_window_patches=model.max_seq_len,
         step_patches=args.context_window_shift,
     )
 
     loader = DataLoader(
-        subject_set,
+        subject_dataset,
         batch_size=args.max_batch_size,
-        sampler=SequentialSampler(subject_set),
+        sampler=SequentialSampler(subject_dataset),
         shuffle=False,
         drop_last=False,
         pin_memory=(device == "cuda"),
     )
     
-    num_windows = len(subject_set)
+    num_windows = len(subject_dataset)
     window_size = model.max_seq_len
-
+    
     print(f'Processing file: {os.path.basename(file)}')
     print(f'Number of windows: {num_windows}')
 
