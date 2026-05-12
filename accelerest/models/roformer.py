@@ -302,7 +302,21 @@ class RoFormerClassifier(nn.Module):
                 nn.Linear(head_dim, num_classes),
             )
 
-    def forward(self, x, use_sdpa=False) -> torch.Tensor:
+    def get_embeddings(self, x, use_sdpa=True):
+        x = self.patch_embedding(x)
+        x = self.encoder(x, use_sdpa=use_sdpa)
+        return x       
+    
+    def get_predictions(self, x):
+        x = self.head_dropout(self.norm(x))
+        if self.num_lstm_layers > 0:
+            x = self.pre_lstm(x)
+            x, _ = self.lstm(x)
+        x = self.head_dropout(self.pool(x))
+        y_hat = self.classification_head(x)
+        return y_hat
+
+    def forward(self, x, use_sdpa=True) -> torch.Tensor:
         x = self.patch_embedding(x)
         x = self.encoder(x, use_sdpa=use_sdpa)
         x = self.head_dropout(self.norm(x))

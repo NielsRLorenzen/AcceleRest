@@ -144,6 +144,16 @@ class MultiHeadAcceleRest(nn.Module):
             model.classification_head,
         )
         return head
+    
+    def get_embeddings(self, x, use_sdpa = True):
+        return self.encoder(self.patch_embedding(x), use_sdpa=use_sdpa)
+    
+    def get_predictions(self, features):
+        outputs = {}
+        for name, head in self.heads.items():
+            outputs[name] = head(features)
+
+        return outputs
 
     def forward(self, x, use_sdpa = True):
         features = self.encoder(self.patch_embedding(x), use_sdpa=use_sdpa)
