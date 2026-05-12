@@ -1,8 +1,9 @@
 import sys
 import torch
 from torch.amp import autocast
-from src.trainers.trainer import Trainer
 from collections import defaultdict
+
+from accelerest.trainers.trainer import Trainer
 
 from sklearn.metrics import (
     roc_auc_score,

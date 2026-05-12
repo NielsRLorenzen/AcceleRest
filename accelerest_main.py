@@ -7,7 +7,7 @@ import actipy
 import torch
 from torch.utils.data import DataLoader, SequentialSampler
 
-from src.datasets.sleep_dataset import AccelerometryDataset
+from accelerest.datasets.sleep_dataset import AccelerometryDataset
 
 def parse_args():
     parser = argparse.ArgumentParser()

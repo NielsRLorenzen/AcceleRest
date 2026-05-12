@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 import math
-from src.models.roformer import RoFormerClassifier
+from accelerest.models.roformer import RoFormerClassifier
 
 class AccDecomp(nn.Module):
     def __init__(

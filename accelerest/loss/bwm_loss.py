@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from src.loss.spectrogram_transform import BandAmplification
+from accelerest.loss.spectrogram_transform import BandAmplification
 
 class BWMLoss(nn.Module):
     def __init__(

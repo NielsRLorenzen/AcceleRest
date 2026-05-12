@@ -19,15 +19,15 @@ from torch.utils.data.distributed import DistributedSampler
 
 from torch.optim.lr_scheduler import LinearLR
 
-from src.datasets.contiguous_dataset import ContigDataset
-from src.datasets.sleep_dataset import ContigDatasetNight
+from accelerest.datasets.contiguous_dataset import ContigDataset
+from accelerest.datasets.sleep_dataset import ContigDatasetNight
 
-import src.utils as utils
-from src.trainers.pretrainer import Pretrainer
-from src.models.roformer import MultitaskRoFormerMaskedAutoEncoder
-from src.loss.band_amplification_loss import BandAmplificationLoss
-from src.loss.scg_loss import SCGLoss
-from src.loss.bwm_loss import BWMLoss
+import accelerest.utils as utils
+from accelerest.trainers.pretrainer import Pretrainer
+from accelerest.models.roformer import MultitaskRoFormerMaskedAutoEncoder
+from accelerest.loss.band_amplification_loss import BandAmplificationLoss
+from accelerest.loss.scg_loss import SCGLoss
+from accelerest.loss.bwm_loss import BWMLoss
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -218,7 +218,7 @@ def main(args):
             config=args.__dict__,
             dir=args.output_dir,
             resume='allow',
-            settings=wandb.Settings(code_dir="./src"),
+            settings=wandb.Settings(code_dir="./accelerest"),
         )
 
     # Load train and val sets

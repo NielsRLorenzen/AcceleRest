@@ -1,7 +1,7 @@
 import sys
 import torch
 from torch.amp import autocast
-from src.trainers.trainer import Trainer
+from accelerest.trainers.trainer import Trainer
 
 class Pretrainer(Trainer):
     def __init__(

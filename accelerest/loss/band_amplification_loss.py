@@ -2,8 +2,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import math
-from src.loss.spectrogram_transform import BandAmplification
-from src.loss.fft_utils import patchwise_fft
+from accelerest.loss.spectrogram_transform import BandAmplification
+from accelerest.loss.fft_utils import patchwise_fft
 
 class BandAmplificationLoss(nn.Module):
     def __init__(

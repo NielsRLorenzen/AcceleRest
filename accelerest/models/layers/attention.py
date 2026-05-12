@@ -4,7 +4,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from src.models.utils.rotary_embeddings import apply_rotary_emb
+from accelerest.models.utils.rotary_embeddings import apply_rotary_emb
 
 class Attention(nn.Module):
     '''Multihead Self Attention Layer with Rotary Embeddings.

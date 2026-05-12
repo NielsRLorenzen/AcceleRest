@@ -1,8 +1,8 @@
 import torch
 import torch.nn as nn
 
-from src.models.utils import compute_rotations
-from src.models.layers import (
+from accelerest.models.utils import compute_rotations
+from accelerest.models.layers import (
     Attention,
     FeedForwardSwiGLU,
     PatchEmbedding1D,

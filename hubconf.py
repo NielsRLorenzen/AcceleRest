@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 
-from src.models.roformer import RoFormerClassifier
+from accelerest.models.roformer import RoFormerClassifier
 
 dependencies = ["torch"]
 

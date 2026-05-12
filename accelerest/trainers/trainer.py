@@ -5,8 +5,8 @@ import wandb
 
 import torch
 
-from src.trainers import utils
-from src.utils import ddp_utils
+from accelerest.trainers import utils
+from accelerest.utils import ddp_utils
 
 class Trainer():
     def __init__(

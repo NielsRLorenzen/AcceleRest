@@ -7,9 +7,9 @@ import yaml
 import torch
 from torch.utils.data import DataLoader, SequentialSampler
 
-from src.models.sleepnet import sleepnet
-from src.datasets.sleep_dataset import SubjectDataset
-from src.models.roformer import RoFormerClassifier
+from accelerest.models.sleepnet import sleepnet
+from accelerest.datasets.sleep_dataset import SubjectDataset
+from accelerest.models.roformer import RoFormerClassifier
 
 def parse_args():
     parser = argparse.ArgumentParser()

@@ -13,13 +13,13 @@ from torch.utils.data import DataLoader
 from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.utils.data.distributed import DistributedSampler
 
-import src.utils as utils
-from src.models.roformer import RoFormerRegression
-from src.models.harnet_lstm import HARNetLSTM
-from src.models.sleepnet import sleepnet
-from src.models.accnet import AcceleroNet, AccelFormer
-from src.datasets.sleep_dataset import WindowDataset
-from src.trainers.finetuner import FinetuneRegression
+import accelerest.utils as utils
+from accelerest.models.roformer import RoFormerRegression
+from accelerest.models.harnet_lstm import HARNetLSTM
+from accelerest.models.sleepnet import sleepnet
+from accelerest.models.accnet import AcceleroNet, AccelFormer
+from accelerest.datasets.sleep_dataset import WindowDataset
+from accelerest.trainers.finetuner import FinetuneRegression
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -301,7 +301,7 @@ def finetune(args, device, distributed, fold = None):
             config = args.__dict__,
             dir = args.output_dir,
             resume = 'allow',
-            settings = wandb.Settings(code_dir="./src"),
+            settings = wandb.Settings(code_dir="./accelerest"),
         )
         # Log setup
         wandb.run.summary['train_set_files'] = len(train_files)

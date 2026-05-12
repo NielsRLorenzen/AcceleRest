@@ -33,7 +33,7 @@ class ContigDatasetNight(Dataset):
 
         overlap (float):
             Fraction of overlap between windows. Ignored if fit_overlap
-            is True./oak/stanford/groups/mignot/3projects/actigraphy_fm/code/SRL_WASSED/src/models
+            is True.
         
         labels (str): 
             Name of the labels to load from the files.
