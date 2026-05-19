@@ -232,17 +232,10 @@ def eval_single(file, model, device, output_dir, args):
     print(f'Number of windows: {num_windows}')
 
     storage = {}
-    next_progress = 0.1
     
     with torch.no_grad():
         for batch_idx, x in enumerate(loader): 
             batch_start_idx = batch_idx * args.max_batch_size
-            
-            # Progress reporting
-            progress = batch_start_idx / num_windows
-            if progress >= next_progress:
-                print(f"{int(next_progress*100)}% of windows processed")
-                next_progress += 0.1
 
             x = x.to(device)
             outputs = model(x)
