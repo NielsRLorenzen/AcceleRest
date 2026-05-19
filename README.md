@@ -12,9 +12,9 @@ git clone https://github.com/NielsRLorenzen/AcceleRest.git
 ```
 
 ### Step 2: Preprocessing your files
-Currently, your raw data files (.cwa, .csv, .bin, etc.) must first be preprocessed manually, e.g. resampling to 30Hz, calibrated to gravity, and non-wear periods set to NaN, and then saved as an array of [axes X n_samples] into a .h5 format with the data stored in 'data/accelerometry'.
+Currently, only raw .cwa files are handled automatically when running step 3. Other raw data files (.gt3x, .csv, .bin, etc.) must first be preprocessed manually, e.g. resampling to 30Hz, calibrated to gravity, and non-wear periods set to NaN, and then saved as an array of [axes X n_samples] into a .h5 format with the data stored in 'data/accelerometry'.
 
-The following code:
+After processing, the following code should result in the number of samples being printed:
 
 ```
 with h5py.File(file, 'r', rdcc_nbytes=1024**3) as f:
@@ -22,14 +22,13 @@ with h5py.File(file, 'r', rdcc_nbytes=1024**3) as f:
     n_samples = data.shape[1]
     print(n_samples)
 ```
-Should result in the number of samples being printed.
 
 ### Step 3: Running AcceleRest
 Use this commandline prompt and edit the paths appropriately to your directory structure: 
 ```
 python /path/to/repo/AcceleRest/accelerest_main.py --data_file_dir /path/to/data/dir/ --output_dir /path/to/output/dir/ --lstm_sleepstages --linear_sleepstages --linear_respevents --context_window_shift 1 --max_batch_size 16 --window_wise_predictions 
 ```
-The --data_file_dir should be a path to a folder with appropriately formatted h5 files (see above).
+The --data_file_dir should be a path to a folder with .cwa or appropriately formatted .h5 files (see above).
 The output_dir will have a subdirectory for each input file with the same name containing the outputs for that file, depending on which flags were used.
 
 These flags determine what prediction heads are used:
