@@ -142,20 +142,24 @@ def init_storage(output_dir, prefix, num_windows, window_size, num_classes, args
 
     return storage
 
-def store_outputs(storage: dict, y_hat: torch.Tensor, batch_start_idx:int):
+def store_outputs(storage: dict, y_hat: torch.Tensor, batch_start_idx: int):
     batch_size, window_size, num_classes = y_hat.shape
-
+ 
     # Fill slice of memmap corresponding to batch (optional)
     if storage["memmap"] is not None:
         storage["memmap"][batch_start_idx: batch_start_idx + batch_size, :, :] = y_hat.numpy()
-
+ 
     for i in range(batch_size):
         window_start = batch_start_idx + i
+        # Mask for valid (non-nan) logits
+        valid_mask = ~torch.isnan(y_hat[i])
         # Fill in predictions summing patch logits across context windows
-        storage["sum_logits"][window_start: window_start + window_size] += y_hat[i]
+        # Only add valid logits
+        storage["sum_logits"][window_start: window_start + window_size][valid_mask] += y_hat[i][valid_mask]
         # Store number of context windows for each patch (Used to avg. later)
-        storage["position_count"][window_start: window_start + window_size] += 1
-
+        # Increment position_count only for valid positions
+        storage["position_count"][window_start: window_start + window_size][valid_mask.any(dim=-1, keepdim=True)] += 1
+ 
 def finalize_head_storage(storage, output_dir, prefix):
     # Save memmap and meta data for reading
     if storage["memmap"] is not None:
@@ -208,13 +212,18 @@ def eval_single(file, model, device, output_dir, args):
                 os.path.join(output_dir, processed_file),
             )
         data_array = dataframe[['x','y','z']].to_numpy(dtype=np.float32).T
-
-    subject_dataset = AccelerometryDataset(
-        accelerometry=data_array,
-        patch_size_samples=model.patch_size,
-        context_window_patches=model.max_seq_len,
-        step_patches=args.context_window_shift,
-    )
+    try:
+        subject_dataset = AccelerometryDataset(
+            accelerometry=data_array,
+            patch_size_samples=model.patch_size,
+            context_window_patches=model.max_seq_len,
+            step_patches=args.context_window_shift,
+        )
+    except RuntimeError as e:
+        if "Number of samples" in str(e):
+            print(f"[WARNING] Caught error: {str(e)} for file {file}, skipping...")
+            return
+        raise
 
     loader = DataLoader(
         subject_dataset,

@@ -15,8 +15,8 @@ from torch.utils.data.distributed import DistributedSampler
 
 import accelerest.utils as utils
 from accelerest.models.roformer import RoFormerClassifier
-from accelerest.models.harnet_lstm import HARNetLSTM
-from accelerest.models.sleepnet import sleepnet
+# from accelerest.models.harnet_lstm import HARNetLSTM
+# from accelerest.models.sleepnet import sleepnet
 from accelerest.models.accnet import AcceleroNet, AccelFormer
 from accelerest.datasets.sleep_dataset import WindowDataset
 from accelerest.trainers.finetuner import Finetuner

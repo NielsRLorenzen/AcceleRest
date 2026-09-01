@@ -1,4 +1,3 @@
-# Description: Default configuration file for FEWA model pretraining
 # Model parameters
 in_channels: 3  # Number of input channels
 patch_size: 900  # Number of samples per token
@@ -48,7 +47,7 @@ mask_ratio: 0.6  # Ratio of tokens to be masked during training
 max_epochs: 40  # Maximum number of epochs to train for
 grad_norm_max: 1.0  # Maximum gradient norm for gradient clipping
 grad_accumulation_steps: 1  # Number of gradient accumulation steps
-mixed_precision: False  # Whether to use mixed precision training
+mixed_precision: false  # Whether to use mixed precision training
 patience: 5  # Patience for early stopping
 seed: 42  # Seed for random number generators
 log_interval: 10 # Number of batches between logging

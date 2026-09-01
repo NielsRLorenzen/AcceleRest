@@ -1,4 +1,3 @@
-# Description: Default configuration file for FEWA model pretraining
 # Model parameters
 in_channels: 3  # Number of input channels
 patch_size: 900  # Number of samples per token

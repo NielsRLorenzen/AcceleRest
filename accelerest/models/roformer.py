@@ -133,7 +133,7 @@ class RoFormerMaskedAutoEncoder(nn.Module):
 
     def apply_mask_token(self, x: torch.Tensor, mask_ratio: float = 0.5):
         '''Generates random indeces to mask for each sample in the 
-        batch by ranking an thresholding random noise, then replaces 
+        batch by ranking and thresholding random noise, then replaces 
         the input tokens with the mask token.
         '''
         B, S, D = x.shape

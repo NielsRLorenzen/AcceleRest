@@ -28,6 +28,8 @@ from accelerest.models.roformer import MultitaskRoFormerMaskedAutoEncoder
 from accelerest.loss.band_amplification_loss import BandAmplificationLoss
 from accelerest.loss.scg_loss import SCGLoss
 from accelerest.loss.bwm_loss import BWMLoss
+from accelerest.loss.masked_mse_loss import MaskedMSELoss
+
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -184,6 +186,12 @@ def get_criterion(args):
             invert_cutoff = args.invert_cutoff,
             weight_clamp = args.weight_clamp,
             patchwise_fft_kwargs = args.patchwise_fft_kwargs,
+            reduction = 'mean',
+        )
+
+    elif args.criterion == 'mse':
+        criterion = MaskedMSELoss(
+            window_samples = args.patch_size,
             reduction = 'mean',
         )
     return criterion
